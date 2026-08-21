@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu, ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PrivacyModal } from "@/components/PrivacyModal";
+import { Toaster } from "@/components/ui/sonner";
 
 export const PRIVACY_LINE =
   "Your photos stay on your device. This demo does not upload or store your originals.";
@@ -165,6 +166,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <Toaster />
     </div>
   );
 }

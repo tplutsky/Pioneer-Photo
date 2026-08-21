@@ -46,11 +46,14 @@ function LibraryPage() {
   const [q, setQ] = useState("");
   const [view, setView] = useState<"shelf" | "grid">("shelf");
 
+  const [nudgeFirst, setNudgeFirst] = useState(false);
+
   useEffect(() => {
     const p = readPrefs();
     setFirstName(p.firstName);
     setFilter(p.lastFilter as AlbumCategory | "All");
     setSort(p.lastSort as Sort);
+    setNudgeFirst(!p.hasOpenedSampleAlbum);
   }, []);
 
   const albums = useMemo(() => {
@@ -178,7 +181,7 @@ function LibraryPage() {
           </p>
         ) : view === "shelf" ? (
           <div className="mt-12">
-            <Shelf albums={albums} />
+            <Shelf albums={albums} nudgeFirst={nudgeFirst} />
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">

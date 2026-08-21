@@ -93,10 +93,10 @@ function PrivacyPage() {
         <section className="border-border mt-14 border-t pt-8">
           <h2 className="text-xl">Licensing note</h2>
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-            All album covers and sample photographs shown are original placeholder artwork created
-            for this prototype. The wordmark is editable placeholder text and is not a claim of
-            affiliation or endorsement. Licensed cover artwork and final branding must be secured
-            before any production launch.
+            Official Pioneer Photo Albums marks and product photos in this demo come from
+            pioneerphotoalbums.com and live in /pioneer/. Remaining covers and every sample
+            “photograph” are original CSS/SVG artwork. No retailer images are used. The waitlist
+            is a local demo — no billing, no server photo upload.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link

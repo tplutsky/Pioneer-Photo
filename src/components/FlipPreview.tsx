@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlbumCover } from "@/components/AlbumCover";
+import { CurlBook, CurlPage } from "@/components/PageTurn";
 import { SamplePhoto } from "@/components/SamplePhoto";
 import { getCover } from "@/data/covers";
 import { PHOTOS } from "@/data/photos";
@@ -13,7 +14,7 @@ const SPREADS = [
   ["p28", "p34"],
 ];
 
-/** Looping flip-through: cover opens, then 3–4 pages turn. No waitlist wall. */
+/** Looping flip-through: cover opens, then pages curl. No waitlist wall. */
 export function FlipPreview({ className }: { className?: string }) {
   const reduced = useReducedMotion();
   const [step, setStep] = useState(0); // 0 = cover, 1..4 = spreads
@@ -33,33 +34,22 @@ export function FlipPreview({ className }: { className?: string }) {
     >
       <div className="bg-walnut-dark/10 absolute -inset-6 rounded-[2rem] blur-2xl" aria-hidden />
       <div className="card-parchment paper-grain relative overflow-hidden rounded-lg p-3 sm:p-4">
-        <div className="relative aspect-[4/3] w-full">
-          <AnimatePresence initial={false} mode="popLayout">
+        <CurlBook className="relative aspect-[4/3] w-full">
+          <AnimatePresence initial={false} mode="wait">
             {step === 0 ? (
-              <motion.div
-                key="cover"
-                initial={reduced ? { opacity: 0 } : { rotateY: -75, opacity: 0 }}
-                animate={reduced ? { opacity: 1 } : { rotateY: 0, opacity: 1 }}
-                exit={reduced ? { opacity: 0 } : { rotateY: 72, opacity: 0 }}
-                transition={reduced ? { duration: 0.25 } : { type: "spring", stiffness: 120, damping: 16 }}
-                style={{ transformOrigin: "left center", transformStyle: "preserve-3d" }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
+              <CurlPage pageKey="cover" dir={1} reduced={reduced} className="absolute inset-0 flex items-center justify-center">
                 <AlbumCover
                   cover={getCover("warm-brown-family")}
                   title="The Early Years"
                   subtitle="1987–1992"
                   className="h-full w-[72%]"
                 />
-              </motion.div>
+              </CurlPage>
             ) : (
-              <motion.div
-                key={`s-${step}`}
-                initial={reduced ? { opacity: 0 } : { rotateY: -62, opacity: 0.4, x: 24 }}
-                animate={reduced ? { opacity: 1 } : { rotateY: 0, opacity: 1, x: 0 }}
-                exit={reduced ? { opacity: 0 } : { rotateY: 48, opacity: 0 }}
-                transition={reduced ? { duration: 0.25 } : { type: "spring", stiffness: 90, damping: 15 }}
-                style={{ transformOrigin: "left center", transformStyle: "preserve-3d" }}
+              <CurlPage
+                pageKey={`s-${step}`}
+                dir={1}
+                reduced={reduced}
                 className="absolute inset-0 grid grid-cols-2 gap-1"
               >
                 {spread.map((pid) => {
@@ -74,11 +64,11 @@ export function FlipPreview({ className }: { className?: string }) {
                     </div>
                   );
                 })}
-              </motion.div>
+              </CurlPage>
             )}
           </AnimatePresence>
-          <div className="via-walnut-dark/25 pointer-events-none absolute inset-y-0 left-1/2 w-3 -translate-x-1/2 bg-gradient-to-r from-transparent to-transparent" />
-        </div>
+          <div className="via-walnut-dark/25 pointer-events-none absolute inset-y-0 left-1/2 z-10 w-3 -translate-x-1/2 bg-gradient-to-r from-transparent to-transparent" />
+        </CurlBook>
         <p className="text-muted-foreground mt-3 text-center text-xs">
           Looping preview · sample album, demo content
         </p>

@@ -341,6 +341,7 @@ function OrganizePage() {
                 <Link
                   to="/album/$id"
                   params={{ id: "summer-coast" }}
+                  search={{ reveal: true }}
                   className="bg-walnut text-primary-foreground tactile rounded-md px-5 py-2.5 text-sm font-semibold active:translate-y-px"
                 >
                   See an Album Reveal

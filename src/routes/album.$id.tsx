@@ -12,8 +12,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AlbumReveal } from "@/components/AlbumReveal";
 import { PageShell, WORDMARK } from "@/components/SiteChrome";
 import { AlbumCover } from "@/components/AlbumCover";
+import { CurlBook, CurlPage } from "@/components/PageTurn";
 import { SamplePhoto } from "@/components/SamplePhoto";
 import { albumById, type AlbumPage, type PageLayout } from "@/data/albums";
 import { getCover } from "@/data/covers";
@@ -21,7 +23,20 @@ import { photoById } from "@/data/photos";
 import { writePrefs } from "@/lib/prefs";
 import { cn } from "@/lib/utils";
 
+export type AlbumSearch = {
+  open?: boolean;
+  reveal?: boolean;
+};
+
+function parseFlag(value: unknown): boolean {
+  return value === true || value === "1" || value === "true";
+}
+
 export const Route = createFileRoute("/album/$id")({
+  validateSearch: (search: Record<string, unknown>): AlbumSearch => ({
+    ...(parseFlag(search.open) ? { open: true } : {}),
+    ...(parseFlag(search.reveal) ? { reveal: true } : {}),
+  }),
   loader: ({ params }) => {
     const album = albumById(params.id);
     if (!album) throw notFound();
@@ -155,10 +170,11 @@ function PageFace({
 
 function AlbumViewer() {
   const { album } = Route.useLoaderData();
+  const search = Route.useSearch();
   const reduced = useReducedMotion();
   const cover = getCover(album.coverId);
 
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(() => Boolean(search.open || search.reveal));
   const [spread, setSpread] = useState(0);
   const [dir, setDir] = useState(1);
   const [editing, setEditing] = useState(false);
@@ -167,7 +183,7 @@ function AlbumViewer() {
   const [tags, setTags] = useState(album.tags.join(", "));
   const [captions, setCaptions] = useState<Record<string, string>>({});
   const [layoutOverride, setLayoutOverride] = useState<Record<string, PageLayout>>({});
-  const [reveal, setReveal] = useState(false);
+  const [reveal, setReveal] = useState(() => Boolean(search.reveal));
 
   const pages = useMemo(
     () =>
@@ -205,24 +221,9 @@ function AlbumViewer() {
   }, [opened, go]);
 
   useEffect(() => {
-    if (!reveal) return;
-    setOpened(true);
-    setSpread(0);
-    let step = 0;
-    const t = window.setInterval(
-      () => {
-        step += 1;
-        if (step > Math.min(2, spreadCount - 1)) {
-          window.clearInterval(t);
-          return;
-        }
-        setDir(1);
-        setSpread(step);
-      },
-      reduced ? 3000 : 1900,
-    );
-    return () => window.clearInterval(t);
-  }, [reveal, spreadCount, reduced]);
+    if (search.open || search.reveal) setOpened(true);
+    if (search.reveal) setReveal(true);
+  }, [search.open, search.reveal]);
 
   async function share() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -325,7 +326,7 @@ function AlbumViewer() {
                     onClick={() => setOpened(true)}
                     className="bg-primary text-primary-foreground tactile hover:shadow-lift mt-6 w-full rounded-md px-6 py-3 font-semibold active:translate-y-0.5"
                   >
-                    Open Album
+                    Open this album
                   </button>
                   <button
                     type="button"
@@ -338,8 +339,8 @@ function AlbumViewer() {
               ) : (
                 <motion.div
                   key="pages"
-                  initial={reduced ? { opacity: 0 } : { opacity: 0, rotateY: 40 }}
-                  animate={{ opacity: 1, rotateY: 0 }}
+                  initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={reduced ? { duration: 0.25 } : { type: "spring", stiffness: 80, damping: 16 }}
                   className="relative"
                 >
@@ -347,42 +348,36 @@ function AlbumViewer() {
                     className="relative rounded-lg p-3 sm:p-5"
                     style={{ background: "linear-gradient(160deg, oklch(0.42 0.05 55), oklch(0.3 0.04 50))", boxShadow: "var(--shadow-lift)" }}
                   >
-                    <div className="relative grid min-h-[320px] gap-1 sm:min-h-[420px] sm:grid-cols-2">
-                      <AnimatePresence custom={dir} mode="popLayout" initial={false}>
-                        <motion.div
-                          key={`l-${spread}`}
-                          custom={dir}
-                          initial={reduced ? { opacity: 0 } : { rotateY: dir > 0 ? -70 : 70, opacity: 0 }}
-                          animate={{ rotateY: 0, opacity: 1 }}
-                          exit={reduced ? { opacity: 0 } : { rotateY: dir > 0 ? 55 : -55, opacity: 0 }}
-                          transition={reduced ? { duration: 0.2 } : { type: "spring", stiffness: 95, damping: 15 }}
-                          style={{ transformOrigin: dir > 0 ? "right center" : "left center", transformStyle: "preserve-3d" }}
-                        >
-                          <PageFace
-                            page={left}
-                            editing={editing}
-                            onCaption={(id, v) => setCaptions((c) => ({ ...c, [id]: v }))}
-                          />
-                        </motion.div>
-                        <motion.div
-                          key={`r-${spread}`}
-                          className="hidden sm:block"
-                          custom={dir}
-                          initial={reduced ? { opacity: 0 } : { rotateY: dir > 0 ? -55 : 55, opacity: 0 }}
-                          animate={{ rotateY: 0, opacity: 1 }}
-                          exit={reduced ? { opacity: 0 } : { rotateY: dir > 0 ? 70 : -70, opacity: 0 }}
-                          transition={reduced ? { duration: 0.2 } : { type: "spring", stiffness: 95, damping: 15, delay: 0.05 }}
-                          style={{ transformOrigin: "left center", transformStyle: "preserve-3d" }}
-                        >
-                          <PageFace
-                            page={right}
-                            editing={editing}
-                            onCaption={(id, v) => setCaptions((c) => ({ ...c, [id]: v }))}
-                          />
-                        </motion.div>
-                      </AnimatePresence>
-                      <div className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-4 -translate-x-1/2 bg-gradient-to-r from-black/0 via-black/35 to-black/0 sm:block" />
-                    </div>
+                    <CurlBook className="relative min-h-[320px] sm:min-h-[420px]">
+                      <div className="relative grid min-h-[320px] gap-1 sm:min-h-[420px] sm:grid-cols-2">
+                        <AnimatePresence custom={dir} mode="popLayout" initial={false}>
+                          <CurlPage
+                            pageKey={`l-${spread}`}
+                            dir={dir}
+                            reduced={reduced}
+                          >
+                            <PageFace
+                              page={left}
+                              editing={editing}
+                              onCaption={(id, v) => setCaptions((c) => ({ ...c, [id]: v }))}
+                            />
+                          </CurlPage>
+                          <CurlPage
+                            pageKey={`r-${spread}`}
+                            dir={dir}
+                            reduced={reduced}
+                            className="hidden sm:block"
+                          >
+                            <PageFace
+                              page={right}
+                              editing={editing}
+                              onCaption={(id, v) => setCaptions((c) => ({ ...c, [id]: v }))}
+                            />
+                          </CurlPage>
+                        </AnimatePresence>
+                        <div className="pointer-events-none absolute inset-y-0 left-1/2 z-10 hidden w-4 -translate-x-1/2 bg-gradient-to-r from-black/0 via-black/35 to-black/0 sm:block" />
+                      </div>
+                    </CurlBook>
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -478,13 +473,13 @@ function AlbumViewer() {
                       >
                         <Copy className="h-4 w-4" aria-hidden /> Copy demo link
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setReveal(true)}
-                        className="border-border tactile inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold active:translate-y-px"
-                      >
-                        <Film className="h-4 w-4" aria-hidden /> Play Album Reveal (demo)
-                      </button>
+                    <button
+                      type="button"
+                      onClick={() => setReveal(true)}
+                      className="border-border tactile inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold active:translate-y-px"
+                    >
+                      <Film className="h-4 w-4" aria-hidden /> Play Album Reveal
+                    </button>
                       <Link
                         to="/waitlist"
                         className="bg-primary text-primary-foreground tactile inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold active:translate-y-px"
@@ -529,6 +524,14 @@ function AlbumViewer() {
           </aside>
         </div>
       </div>
+      {reveal ? (
+        <AlbumReveal
+          album={album}
+          title={title}
+          dateRange={dateRange}
+          onClose={() => setReveal(false)}
+        />
+      ) : null}
     </PageShell>
   );
 }

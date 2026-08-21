@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BookOpen, FolderHeart, Lock, Sparkles } from "lucide-react";
 import { PageShell, PrivacyBanner, WORDMARK } from "@/components/SiteChrome";
 import { Shelf } from "@/components/Shelf";
 import { FlipPreview } from "@/components/FlipPreview";
 import { ALBUMS } from "@/data/albums";
-import { writePrefs } from "@/lib/prefs";
+import { useHeroParallax } from "@/hooks/use-hero-parallax";
+import { readPrefs, writePrefs } from "@/lib/prefs";
 
 const TITLE = "Pioneer Photo Albums Library — Bring your photo library back to life";
 const DESC =
@@ -53,7 +54,13 @@ const STEPS = [
 function Landing() {
   const reduced = useReducedMotion();
   const [opened, setOpened] = useState(false);
+  const [hasOpened, setHasOpened] = useState(true);
   const shelfAlbums = ALBUMS.slice(0, 12);
+  const { textY, previewX, previewY, previewRotate, shelfY, glowX } = useHeroParallax(reduced);
+
+  useEffect(() => {
+    setHasOpened(readPrefs().hasOpenedSampleAlbum);
+  }, []);
 
   return (
     <PageShell>
@@ -63,9 +70,11 @@ function Landing() {
           className="from-gold/20 pointer-events-none absolute inset-0 bg-gradient-to-b via-transparent to-transparent"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          style={{ x: glowX }}
           transition={{ duration: 1.2 }}
         />
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:py-20">
+          <motion.div style={{ y: textY }}>
           <motion.div
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -93,37 +102,55 @@ function Landing() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                to="/library"
+                to="/album/$id"
+                params={{ id: "early-years" }}
+                search={{ open: true }}
                 onClick={() => writePrefs({ hasOpenedSampleAlbum: true })}
                 className="bg-primary text-primary-foreground tactile hover:shadow-lift inline-flex items-center gap-2 rounded-md px-6 py-3 text-base font-semibold active:translate-y-0.5"
               >
                 <BookOpen className="h-5 w-5" aria-hidden />
+                Open an album
+              </Link>
+              <Link
+                to="/library"
+                className="border-walnut/50 text-foreground tactile hover:bg-secondary inline-flex items-center rounded-md border px-6 py-3 text-base font-semibold active:translate-y-0.5"
+              >
                 Try the Album Library
               </Link>
               <Link
                 to="/waitlist"
-                className="border-walnut/50 text-foreground tactile hover:bg-secondary inline-flex items-center rounded-md border px-6 py-3 text-base font-semibold active:translate-y-0.5"
+                className="text-muted-foreground hover:text-foreground text-sm font-semibold underline underline-offset-4"
               >
                 Join the 30-Day Free Trial Waitlist
               </Link>
             </div>
             <p className="text-muted-foreground mt-3 text-sm">
-              One tap, no form. Browse the whole demo without signing in.
+              {hasOpened
+                ? "One tap, no form. Browse the whole demo without signing in."
+                : "Start with The Early Years — pages turn on the first tap. No form."}
             </p>
             <div className="mt-5">
               <PrivacyBanner />
             </div>
           </motion.div>
+          </motion.div>
 
-          <FlipPreview className="lg:justify-self-end lg:w-[520px]" />
+          <motion.div
+            style={{ x: previewX, y: previewY, rotate: previewRotate }}
+            className="lg:justify-self-end lg:w-[520px]"
+          >
+            <FlipPreview />
+          </motion.div>
         </div>
 
-        <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
-          <Shelf albums={shelfAlbums} />
+        <motion.div style={{ y: shelfY }} className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
+          <Shelf albums={shelfAlbums} nudgeFirst={!hasOpened} />
           <p className="text-muted-foreground mt-4 text-center text-sm">
-            Twelve demo albums, already shelved. Pick a spine to open one.
+            {hasOpened
+              ? "Twelve demo albums, already shelved. Pick a spine to open one."
+              : "Twelve demo albums, already shelved. The first spine is waiting — tap it to open an album."}
           </p>
-        </div>
+        </motion.div>
 
         <div className="mx-auto max-w-3xl px-4 pb-14 text-center sm:px-6">
           <p className="text-muted-foreground text-sm">
@@ -145,6 +172,7 @@ function Landing() {
             <Link
               to="/album/$id"
               params={{ id: "summer-coast" }}
+              search={{ open: true }}
               onClick={() => {
                 writePrefs({ hasOpenedSampleAlbum: true });
                 setOpened(true);
@@ -156,6 +184,7 @@ function Landing() {
             <Link
               to="/album/$id"
               params={{ id: "mias-first-year" }}
+              search={{ open: true }}
               onClick={() => {
                 writePrefs({ hasOpenedSampleAlbum: true });
                 setOpened(true);

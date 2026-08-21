@@ -207,17 +207,29 @@ export function AlbumCover({
   );
 }
 
-/** Upright album on a shelf: spine forward. */
+export function spineDateLabel(dateRange: string): string {
+  const years = dateRange.match(/\d{4}/g);
+  if (!years?.length) return dateRange.length > 8 ? dateRange.slice(0, 7) : dateRange;
+  if (years.length === 1) return years[0]!;
+  return `${years[0]!.slice(2)}–${years[1]!.slice(2)}`;
+}
+
+/** Upright album on a shelf: spine forward, with year and photo count. */
 export function AlbumSpine({
   cover,
   title,
+  dateRange,
+  photoCount,
   className,
 }: {
   cover: AlbumCoverDef;
   title: string;
+  dateRange?: string;
+  photoCount?: number;
   className?: string;
 }) {
   const skin = coverSkin(cover.id);
+  const dateLabel = dateRange ? spineDateLabel(dateRange) : "";
   return (
     <div
       className={cn("relative overflow-hidden rounded-t-sm rounded-b-[2px]", className)}
@@ -229,14 +241,31 @@ export function AlbumSpine({
       <TexturedOverlay texture={skin.texture} />
       <div className="absolute inset-x-1 top-2 h-px" style={{ background: skin.accent, opacity: 0.7 }} />
       <div className="absolute inset-x-1 bottom-2 h-px" style={{ background: skin.accent, opacity: 0.7 }} />
+      {dateLabel ? (
+        <span
+          className="absolute inset-x-0 top-3 text-center text-[0.48rem] font-semibold tracking-wide sm:text-[0.55rem]"
+          style={{ color: skin.accent }}
+        >
+          {dateLabel}
+        </span>
+      ) : null}
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className="font-display max-h-[80%] overflow-hidden text-[0.62rem] font-semibold tracking-wide whitespace-nowrap"
+          className="font-display max-h-[62%] overflow-hidden text-[0.62rem] font-semibold tracking-wide whitespace-nowrap"
           style={{ color: skin.ink, writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {title}
         </span>
       </div>
+      {typeof photoCount === "number" ? (
+        <span
+          className="absolute inset-x-0 bottom-3 text-center text-[0.48rem] font-semibold tracking-wide sm:text-[0.55rem]"
+          style={{ color: skin.accent }}
+          aria-hidden
+        >
+          {photoCount}
+        </span>
+      ) : null}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/30" />
     </div>
   );
