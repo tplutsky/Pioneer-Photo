@@ -1,0 +1,14 @@
+Official Pioneer Photo Albums art
+=================================
+
+Source: first-party WordPress media on the apex host only
+  https://pioneerphotoalbums.com/media/wp-json/wp/v2/media
+  https://pioneerphotoalbums.com/media/wp-content/uploads/
+
+Do not hotlink these files in production UI. Copies live in:
+  covers/   clean front JPEGs (resized for the demo)
+  spines/   tall crops of the left binding from the same fronts
+
+Logos (logo-wagon.jpg, logo-left.png) are also first-party Pioneer marks.
+
+No Amazon, Walmart, B&H, or other retailer images.

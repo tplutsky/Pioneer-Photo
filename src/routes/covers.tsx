@@ -97,8 +97,9 @@ function CoversPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <h1 className="text-4xl sm:text-5xl">Choose a cover that feels like the memory inside.</h1>
         <p className="text-muted-foreground mt-3 max-w-2xl">
-          Official Pioneer Photo Albums covers come from pioneerphotoalbums.com. If a photo is
-          missing, the original CSS/SVG skin still paints the cover. No retailer scrapes.
+          Forty official Pioneer SKUs, stored with this demo from pioneerphotoalbums.com. Every
+          collection, color, format, and material here has a real product. If a photo fails to
+          load, a CSS/SVG skin still paints the cover. No retailer scrapes.
         </p>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -157,8 +158,9 @@ function CoversPage() {
 
         <div className="border-border mt-16 border-t pt-6">
           <p className="text-muted-foreground text-sm">
-            Covers marked Official Pioneer use first-party product photos from
-            pioneerphotoalbums.com. Others remain original CSS/SVG placeholders.
+            Every card is an official Pioneer SKU (front JPEG in /pioneer/covers). Library
+            spines use a matching crop from the same first-party photo. CSS/SVG is fallback
+            only.
           </p>
           <Link to="/library" className="text-primary mt-3 inline-block text-sm underline underline-offset-4">
             Back to your library

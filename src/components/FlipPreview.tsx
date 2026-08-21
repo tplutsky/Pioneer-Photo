@@ -39,7 +39,7 @@ export function FlipPreview({ className }: { className?: string }) {
             {step === 0 ? (
               <CurlPage pageKey="cover" dir={1} reduced={reduced} className="absolute inset-0 flex items-center justify-center">
                 <AlbumCover
-                  cover={getCover("warm-brown-family")}
+                  cover={getCover("da200sf-bn")}
                   title="The Early Years"
                   subtitle="1987–1992"
                   className="h-full w-[72%]"

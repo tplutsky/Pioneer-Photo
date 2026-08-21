@@ -1,10 +1,7 @@
 /**
- * Cover Catalog — official Pioneer product photos plus CSS/SVG fallbacks.
- *
- * Official JPEGs live in /public/pioneer/ (first-party pioneerphotoalbums.com).
- * `coverImage` is the CSS/SVG style key used when no photo is present or the
- * photo fails to load. `photoSrc` points at an official product JPEG when one
- * matches the cover.
+ * Cover Catalog — official Pioneer product photos from pioneerphotoalbums.com
+ * (apex WordPress media API). Files live in /public/pioneer/covers and
+ * /public/pioneer/spines. CSS/SVG skins are fallbacks only.
  */
 
 export type CoverCollection =
@@ -25,7 +22,6 @@ export type CoverMaterial =
   | "Linen"
   | "Bonded Leather"
   | "Printed Board"
-  | "Kraft Paper"
   | "Cloth"
   | "Archival Buckram";
 
@@ -38,167 +34,97 @@ export interface AlbumCoverDef {
   color: string;
   material: CoverMaterial;
   style: string;
-  /** CSS/SVG style key rendered by <AlbumCover /> as the fallback skin. */
+  /** CSS/SVG style key rendered by <AlbumCover /> if the photo fails. */
   coverImage: string;
-  /** Official Pioneer product photo under /pioneer/, when one fits. */
+  /** Official Pioneer front/cover JPEG under /pioneer/covers/. */
   photoSrc?: string;
+  /** Official spine crop (or cover cropped to a tall spine) under /pioneer/spines/. */
+  spineSrc?: string;
   formats: CoverFormat[];
   licensingStatus: LicensingStatus;
 }
 
+const official = (
+  sku: string,
+  collection: CoverCollection,
+  color: string,
+  material: CoverMaterial,
+  style: string,
+  formats: CoverFormat[],
+  file = sku,
+): AlbumCoverDef => ({
+  id: sku.toLowerCase(),
+  name: sku,
+  collection,
+  color,
+  material,
+  style,
+  coverImage: `css:${sku.toLowerCase()}`,
+  photoSrc: `/pioneer/covers/${file}.jpg`,
+  spineSrc: `/pioneer/spines/${file}.jpg`,
+  formats,
+  licensingStatus: "official-pioneer",
+});
+
 export const COVERS: AlbumCoverDef[] = [
-  {
-    id: "burgundy-gold-frame",
-    name: "Classic Navy Album",
-    collection: "Classic",
-    color: "Navy",
-    material: "Bonded Leather",
-    style: "Gold spine lettering (album2)",
-    coverImage: "css:burgundy-gold-frame",
-    photoSrc: "/pioneer/album2.jpg",
-    formats: ["4x6", "5x7", "8x10"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "ivory-linen-emboss",
-    name: "White Bookbound",
-    collection: "Linen",
-    color: "Ivory",
-    material: "Linen",
-    style: "BDP35-W bookbound / post",
-    coverImage: "css:ivory-linen-emboss",
-    photoSrc: "/pioneer/BDP35-W.jpg",
-    formats: ["5x7", "8x10", "Square"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "navy-heritage-spine",
-    name: "Navy Post-Bound",
-    collection: "Heritage",
-    color: "Navy",
-    material: "Bonded Leather",
-    style: "STC504-NB scrapbook",
-    coverImage: "css:navy-heritage-spine",
-    photoSrc: "/pioneer/STC504-NB.jpg",
-    formats: ["8x10", "Scrapbook"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "floral-garden",
-    name: "Garden Floral",
-    collection: "Floral",
-    color: "Rose",
-    material: "Printed Board",
-    style: "Hand-drawn garden print",
-    coverImage: "css:floral-garden",
-    formats: ["4x6", "5x7", "Square"],
-    licensingStatus: "original-placeholder",
-  },
-  {
-    id: "kraft-travel-journal",
-    name: "Kraft Travel Journal",
-    collection: "Travel",
-    color: "Kraft",
-    material: "Kraft Paper",
-    style: "Stitched journal with stamps",
-    coverImage: "css:kraft-travel-journal",
-    formats: ["4x6", "Scrapbook"],
-    licensingStatus: "original-placeholder",
-  },
-  {
-    id: "sage-botanical",
-    name: "Sage Botanical",
-    collection: "Floral",
-    color: "Sage",
-    material: "Cloth",
-    style: "Pressed-leaf motif",
-    coverImage: "css:sage-botanical",
-    formats: ["5x7", "8x10", "Square"],
-    licensingStatus: "original-placeholder",
-  },
-  {
-    id: "black-archival",
-    name: "Black Bi-Directional",
-    collection: "Classic",
-    color: "Black",
-    material: "Archival Buckram",
-    style: "DA200SF-BK fabric",
-    coverImage: "css:black-archival",
-    photoSrc: "/pioneer/DA200SF-BK.jpg",
-    formats: ["8x10", "Scrapbook"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "warm-brown-family",
-    name: "Brown Bi-Directional",
-    collection: "Heritage",
-    color: "Walnut",
-    material: "Bonded Leather",
-    style: "DA200SF-BN fabric",
-    coverImage: "css:warm-brown-family",
-    photoSrc: "/pioneer/DA200SF-BN.jpg",
-    formats: ["5x7", "8x10"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "pale-blue-baby",
-    name: "Pale Blue Baby",
-    collection: "Baby",
-    color: "Pale Blue",
-    material: "Cloth",
-    style: "Soft scallop border",
-    coverImage: "css:pale-blue-baby",
-    formats: ["4x6", "Square"],
-    licensingStatus: "original-placeholder",
-  },
-  {
-    id: "red-gold-holiday",
-    name: "Red Cloth Bookbound",
-    collection: "Seasonal",
-    color: "Deep Red",
-    material: "Cloth",
-    style: "DA200CBF-R bi-directional",
-    coverImage: "css:red-gold-holiday",
-    photoSrc: "/pioneer/DA200CBF-R.jpg",
-    formats: ["4x6", "5x7", "Square"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "pearl-wedding",
-    name: "Silver Frame Wedding",
-    collection: "Wedding",
-    color: "Pearl",
-    material: "Linen",
-    style: "WFM46 silver frame",
-    coverImage: "css:pearl-wedding",
-    photoSrc: "/pioneer/WFM46-SilverFrame-wText.jpg",
-    formats: ["8x10", "Square", "Scrapbook"],
-    licensingStatus: "official-pioneer",
-  },
-  {
-    id: "forest-expedition",
-    name: "Forest Expedition",
-    collection: "Travel",
-    color: "Forest Green",
-    material: "Leatherette",
-    style: "Compass rose deboss",
-    coverImage: "css:forest-expedition",
-    formats: ["4x6", "5x7", "Scrapbook"],
-    licensingStatus: "original-placeholder",
-  },
-  {
-    id: "memory-book-ivory",
-    name: "Ivory Memory Book",
-    collection: "Heritage",
-    color: "Ivory",
-    material: "Cloth",
-    style: "MB10CBFI memory book",
-    coverImage: "css:ivory-linen-emboss",
-    photoSrc: "/pioneer/MB10CBFI.jpg",
-    formats: ["5x7", "8x10"],
-    licensingStatus: "official-pioneer",
-  },
+  official("DA200SF-BK", "Classic", "Black", "Archival Buckram", "Black fabric bi-directional", ["4x6", "8x10"]),
+  official("DA200SF-BN", "Heritage", "Walnut", "Bonded Leather", "Brown fabric bi-directional", ["4x6", "5x7", "8x10"]),
+  official("DA200CBF-BK", "Classic", "Black", "Cloth", "Black cloth bi-directional", ["4x6"]),
+  official("DA200CBF-R", "Seasonal", "Deep Red", "Cloth", "Red cloth bi-directional", ["4x6", "5x7", "Square"]),
+  official("DA200CBF-SG", "Floral", "Sage", "Cloth", "Sage cloth bi-directional", ["4x6", "5x7"]),
+  official("DA200CBF-SB", "Baby", "Pale Blue", "Cloth", "Sky-blue cloth bi-directional", ["4x6", "Square"]),
+  official("BDP35-W", "Linen", "Ivory", "Linen", "White bookbound / post", ["5x7", "8x10", "Square"]),
+  official("BDP35-NB", "Classic", "Navy", "Bonded Leather", "Navy bookbound / post", ["5x7", "8x10"]),
+  official("BDP35-BK", "Classic", "Black", "Bonded Leather", "Black bookbound / post", ["5x7"]),
+  official("BDP35-BR", "Heritage", "Burgundy", "Bonded Leather", "Burgundy bookbound / post", ["5x7"]),
+  official("BDP35-HG", "Travel", "Forest Green", "Bonded Leather", "Hunter-green bookbound / post", ["5x7"]),
+  official("BDP35-BB", "Heritage", "Plum", "Bonded Leather", "Plum bookbound / post", ["5x7"]),
+  official("STC504-NB", "Heritage", "Navy", "Bonded Leather", "Navy post-bound scrapbook", ["Scrapbook", "8x10"]),
+  official("STC504-BR", "Heritage", "Burgundy", "Bonded Leather", "Burgundy post-bound scrapbook", ["Scrapbook"]),
+  official("STC504-HG", "Travel", "Forest Green", "Bonded Leather", "Hunter-green post-bound scrapbook", ["Scrapbook"]),
+  official("STC204-NB", "Heritage", "Navy", "Bonded Leather", "Navy mini post-bound scrapbook", ["Scrapbook"]),
+  official("WFM46-SilverFrame-wText", "Wedding", "Pearl", "Linen", "Silver frame wedding", ["4x6", "Square"], "WFM46-SilverFrame-wText"),
+  official("WFM46-GoldFrame-wText", "Wedding", "Ivory", "Linen", "Gold frame wedding", ["4x6", "Square"], "WFM46-GoldFrame-wText"),
+  official("MB10CBFI", "Heritage", "Ivory", "Cloth", "Ivory memory book", ["5x7", "8x10"]),
+  official("MB10CBF-BK", "Classic", "Black", "Cloth", "Black memory book", ["8x10"]),
+  official("MB10CBF-R", "Seasonal", "Deep Red", "Cloth", "Red memory book", ["8x10"]),
+  official("5COL240W", "Classic", "Ivory", "Cloth", "White five-window collage", ["5x7", "Square"]),
+  official("5COL240B-P", "Baby", "Rose", "Cloth", "Baby pink five-window collage", ["4x6", "Square"]),
+  official("5COL240TR", "Travel", "Walnut", "Leatherette", "Travel five-window collage", ["4x6", "Square"]),
+  official("5COL240FM", "Classic", "Black", "Cloth", "Family five-window collage", ["4x6", "Square"]),
+  official("A4100-F", "Floral", "Sage", "Printed Board", "Botanical print cover", ["4x6"]),
+  official("EV246G-L", "Wedding", "Ivory", "Printed Board", "Live Laugh Love gold-dot", ["4x6", "Square"]),
+  official("EV246FB-OGN", "Travel", "Forest Green", "Printed Board", "Organic green event cover", ["4x6", "Square"]),
+  official("SJ100-BR", "Leatherette", "Burgundy", "Leatherette", "Burgundy gold-frame journal", ["4x6"]),
+  official("SJ100-W", "Linen", "Ivory", "Leatherette", "White stitch journal", ["4x6"]),
+  official("LM100-BR", "Leatherette", "Burgundy", "Leatherette", "Burgundy leatherette memo", ["4x6"]),
+  official("LM100-NB", "Leatherette", "Navy", "Leatherette", "Navy leatherette memo", ["4x6"]),
+  official("T12CBF-BK", "Classic", "Black", "Cloth", "12×12 black cloth scrapbook", ["Scrapbook"]),
+  official("DA200LLL-S", "Linen", "Ivory", "Linen", "Linen-look bi-directional", ["4x6", "Square"]),
+  official("CLB346-BN", "Leatherette", "Walnut", "Leatherette", "Brown cloth-leatherette book", ["4x6", "5x7"]),
+  official("DA200CBFN-WP", "Linen", "Plum", "Linen", "Plum linen window", ["4x6", "Square"]),
+  official("DA200CBFE-BB", "Linen", "Sand", "Linen", "Sand linen window", ["4x6", "Square"]),
+  official("DA200CBFN-WM", "Heritage", "Walnut", "Linen", "Espresso linen window", ["4x6", "Square"]),
+  official("TXT200TR", "Travel", "Walnut", "Leatherette", "Travel word-cover", ["4x6", "Square"]),
+  official("JMV207-NB", "Travel", "Navy", "Leatherette", "Navy journal memo", ["4x6"]),
 ];
+
+/** Older demo ids still resolve after the SKU catalog landed. */
+const LEGACY_IDS: Record<string, string> = {
+  "burgundy-gold-frame": "bdp35-nb",
+  "ivory-linen-emboss": "bdp35-w",
+  "navy-heritage-spine": "stc504-nb",
+  "floral-garden": "a4100-f",
+  "kraft-travel-journal": "txt200tr",
+  "sage-botanical": "da200cbf-sg",
+  "black-archival": "da200sf-bk",
+  "warm-brown-family": "da200sf-bn",
+  "pale-blue-baby": "da200cbf-sb",
+  "red-gold-holiday": "da200cbf-r",
+  "pearl-wedding": "wfm46-silverframe-wtext",
+  "forest-expedition": "bdp35-hg",
+  "memory-book-ivory": "mb10cbfi",
+};
 
 export const COLLECTIONS: CoverCollection[] = [
   "Classic",
@@ -219,11 +145,13 @@ export const MATERIALS: CoverMaterial[] = [
   "Linen",
   "Bonded Leather",
   "Printed Board",
-  "Kraft Paper",
   "Cloth",
   "Archival Buckram",
 ];
 
 export const COVER_COLORS = Array.from(new Set(COVERS.map((c) => c.color)));
 
-export const getCover = (id: string) => COVERS.find((c) => c.id === id) ?? COVERS[0]!;
+export const getCover = (id: string) => {
+  const resolved = LEGACY_IDS[id] ?? id;
+  return COVERS.find((c) => c.id === resolved) ?? COVERS[0]!;
+};

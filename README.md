@@ -37,26 +37,25 @@ TanStack Start uses file-based routes in `src/routes/`. See `src/routes/README.m
 - **Play Album Reveal** for a branded walk-through of a sample album, with the official wagon mark.
 - **Save as a short movie (demo)** records that reveal in the browser and downloads a file to this device. Nothing is sent to a server.
 - **Organize** lets you choose local image files for a temporary preview. Object URLs are revoked when you leave.
-- **Cover Catalog** uses official Pioneer product photos where they fit, and original skins when they do not.
+- **Cover Catalog** lists 40 official Pioneer SKUs. Every collection, color, format, and material filter has at least one real product. CSS/SVG is fallback only.
+- **Library and landing shelves** show all twelve demo albums. Each spine is a crop of the official cover (title + year on top of the real binding).
 
 ## Official art
 
-Official Pioneer Photo Albums logos and product photos live in `public/pioneer/`. They are first-party assets from pioneerphotoalbums.com.
+Official Pioneer Photo Albums logos and product photos live in `public/pioneer/`. They are first-party JPEGs from the public WordPress media API at `https://pioneerphotoalbums.com/media/wp-json/wp/v2/media` (apex host only — not www, not retailers). Fronts are stored in `public/pioneer/covers/`. Spine crops of those same fronts live in `public/pioneer/spines/`. The UI does not hotlink the live site.
 
 | File | Use |
 | --- | --- |
 | `logo-wagon.jpg` | Header / footer wagon mark, favicon |
 | `logo-left.png` | Wordmark lockup on the landing hero and Album Reveal |
-| `album2.jpg` | Classic navy / gold-spine cover |
-| `BDP35-W.jpg` | White bookbound |
-| `STC504-NB.jpg` | Navy post-bound scrapbook |
-| `DA200SF-BK.jpg` | Black bi-directional |
-| `DA200SF-BN.jpg` | Brown bi-directional |
-| `DA200CBF-R.jpg` | Red cloth bookbound |
-| `WFM46-SilverFrame-wText.jpg` | Silver frame wedding |
-| `MB10CBFI.jpg` | Ivory memory book |
+| `covers/*.jpg` | Catalog cards — clean official fronts |
+| `spines/*.jpg` | Library / landing shelf — spine or left-edge crop |
 
-The Cover Catalog uses those photos where they fit and keeps CSS/SVG skins as fallbacks. Sample “photographs” inside albums are original abstract illustrations — no real people, no retailer scrapes.
+### SKUs in this demo (40)
+
+DA200SF-BK, DA200SF-BN, DA200CBF-BK, DA200CBF-R, DA200CBF-SG, DA200CBF-SB, BDP35-W, BDP35-NB, BDP35-BK, BDP35-BR, BDP35-HG, BDP35-BB, STC504-NB, STC504-BR, STC504-HG, STC204-NB, WFM46-SilverFrame-wText, WFM46-GoldFrame-wText, MB10CBFI, MB10CBF-BK, MB10CBF-R, 5COL240W, 5COL240B-P, 5COL240TR, 5COL240FM, A4100-F, EV246G-L, EV246FB-OGN, SJ100-BR, SJ100-W, LM100-BR, LM100-NB, T12CBF-BK, DA200LLL-S, CLB346-BN, DA200CBFN-WP, DA200CBFE-BB, DA200CBFN-WM, TXT200TR, JMV207-NB.
+
+Sample “photographs” inside albums are original abstract illustrations — no real people, no retailer scrapes.
 
 ## Motion
 

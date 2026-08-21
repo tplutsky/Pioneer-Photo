@@ -58,7 +58,7 @@ function OrganizePage() {
   const [dragOver, setDragOver] = useState(false);
   const [previews, setPreviews] = useState<LocalPreview[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
-  const coverId = typeof window !== "undefined" ? readPrefs().chosenCoverId : "burgundy-gold-frame";
+  const coverId = typeof window !== "undefined" ? readPrefs().chosenCoverId : "da200sf-bn";
 
   useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
 

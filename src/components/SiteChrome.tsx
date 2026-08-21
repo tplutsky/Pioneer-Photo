@@ -151,8 +151,8 @@ export function SiteFooter() {
           <PrivacyModal />
           <p className="text-muted-foreground/80 text-xs leading-relaxed">
             Official Pioneer Photo Albums marks and product photos are first-party art from
-            pioneerphotoalbums.com. Remaining covers are original CSS/SVG placeholders. The
-            waitlist is a local demo — no billing, no server photo upload.
+            pioneerphotoalbums.com, stored with this demo. CSS/SVG skins are fallback only.
+            The waitlist is a local demo — no billing, no server photo upload.
           </p>
         </div>
       </div>

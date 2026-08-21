@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AlbumCoverDef } from "@/data/covers";
+import { getCover, type AlbumCoverDef } from "@/data/covers";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,10 +31,27 @@ const SKINS: Record<string, Skin> = {
   "memory-book-ivory": { base: "#efe6d4", shade: "#ddd0b8", ink: "#5a4a34", accent: "#b79f74", texture: "linen" },
 };
 
-const fallback: Skin = SKINS["black-archival"]!;
+const COLOR_SKINS: Record<string, Skin> = {
+  Black: { base: "#20201f", shade: "#101010", ink: "#f0e6d2", accent: "#d8b169", texture: "board" },
+  Navy: { base: "#22304c", shade: "#141d31", ink: "#e8d9b4", accent: "#cdae6f", texture: "leather" },
+  Walnut: { base: "#6b4a2f", shade: "#48301c", ink: "#f0dfbe", accent: "#cfa86a", texture: "leather" },
+  Burgundy: { base: "#5d1f28", shade: "#3d1219", ink: "#f4e3c1", accent: "#d8b169", texture: "leather" },
+  Ivory: { base: "#efe6d4", shade: "#ddd0b8", ink: "#5a4a34", accent: "#b79f74", texture: "linen" },
+  "Deep Red": { base: "#7a1f22", shade: "#521315", ink: "#f6e3b8", accent: "#e0bb6e", texture: "board" },
+  Sage: { base: "#c3cdb6", shade: "#a5b295", ink: "#3c4a34", accent: "#65784f", texture: "linen" },
+  "Pale Blue": { base: "#cddce8", shade: "#adc2d3", ink: "#3d4f5f", accent: "#7d9cb5", texture: "linen" },
+  Rose: { base: "#e7d3d6", shade: "#d3b6bc", ink: "#5b3742", accent: "#a8617a", texture: "board" },
+  Pearl: { base: "#f0ece2", shade: "#ddd7c8", ink: "#5c5245", accent: "#c2ab7d", texture: "linen" },
+  "Forest Green": { base: "#2f4634", shade: "#1d2c22", ink: "#e6dcc0", accent: "#bda169", texture: "leather" },
+  Plum: { base: "#4a3354", shade: "#2d1f34", ink: "#f0dfbe", accent: "#cdae6f", texture: "linen" },
+  Sand: { base: "#d8cbb3", shade: "#b9a88c", ink: "#4a3c2a", accent: "#b79f74", texture: "linen" },
+};
+
+const fallback: Skin = COLOR_SKINS.Black!;
 
 export function coverSkin(coverId: string): Skin {
-  return SKINS[coverId] ?? fallback;
+  if (SKINS[coverId]) return SKINS[coverId]!;
+  return COLOR_SKINS[getCover(coverId).color] ?? fallback;
 }
 
 function TexturedOverlay({ texture }: { texture: Skin["texture"] }) {
@@ -214,7 +231,7 @@ export function spineDateLabel(dateRange: string): string {
   return `${years[0]!.slice(2)}–${years[1]!.slice(2)}`;
 }
 
-/** Upright album on a shelf: spine forward, with year and photo count. */
+/** Upright album on a shelf: official Pioneer spine photo, with year and count. */
 export function AlbumSpine({
   cover,
   title,
@@ -230,6 +247,9 @@ export function AlbumSpine({
 }) {
   const skin = coverSkin(cover.id);
   const dateLabel = dateRange ? spineDateLabel(dateRange) : "";
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const spinePhoto = cover.spineSrc || cover.photoSrc;
+  const showPhoto = Boolean(spinePhoto) && !photoFailed;
   return (
     <div
       className={cn("relative overflow-hidden rounded-t-sm rounded-b-[2px]", className)}
@@ -238,12 +258,27 @@ export function AlbumSpine({
         boxShadow: "var(--shadow-spine)",
       }}
     >
-      <TexturedOverlay texture={skin.texture} />
-      <div className="absolute inset-x-1 top-2 h-px" style={{ background: skin.accent, opacity: 0.7 }} />
-      <div className="absolute inset-x-1 bottom-2 h-px" style={{ background: skin.accent, opacity: 0.7 }} />
+      {spinePhoto ? (
+        <img
+          src={spinePhoto}
+          alt=""
+          onError={() => setPhotoFailed(true)}
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover object-left",
+            showPhoto ? "opacity-100" : "hidden",
+          )}
+        />
+      ) : null}
+      {!showPhoto && <TexturedOverlay texture={skin.texture} />}
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-black/35"
+        aria-hidden
+      />
+      <div className="absolute inset-x-1 top-2 h-px" style={{ background: skin.accent, opacity: 0.75 }} />
+      <div className="absolute inset-x-1 bottom-2 h-px" style={{ background: skin.accent, opacity: 0.75 }} />
       {dateLabel ? (
         <span
-          className="absolute inset-x-0 top-3 text-center text-[0.48rem] font-semibold tracking-wide sm:text-[0.55rem]"
+          className="absolute inset-x-0 top-2.5 text-center text-[0.48rem] font-semibold tracking-wide drop-shadow sm:text-[0.55rem]"
           style={{ color: skin.accent }}
         >
           {dateLabel}
@@ -251,7 +286,7 @@ export function AlbumSpine({
       ) : null}
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className="font-display max-h-[62%] overflow-hidden text-[0.62rem] font-semibold tracking-wide whitespace-nowrap"
+          className="font-display max-h-[58%] overflow-hidden text-[0.58rem] font-semibold tracking-wide whitespace-nowrap drop-shadow sm:text-[0.62rem]"
           style={{ color: skin.ink, writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {title}
@@ -259,14 +294,13 @@ export function AlbumSpine({
       </div>
       {typeof photoCount === "number" ? (
         <span
-          className="absolute inset-x-0 bottom-3 text-center text-[0.48rem] font-semibold tracking-wide sm:text-[0.55rem]"
+          className="absolute inset-x-0 bottom-2.5 text-center text-[0.48rem] font-semibold tracking-wide drop-shadow sm:text-[0.55rem]"
           style={{ color: skin.accent }}
           aria-hidden
         >
           {photoCount}
         </span>
       ) : null}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/30" />
     </div>
   );
 }

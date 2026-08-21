@@ -19,7 +19,7 @@ export const DEFAULT_PREFS: DemoPrefs = {
   firstName: "Ellie",
   lastFilter: "All",
   lastSort: "Recently updated",
-  chosenCoverId: "burgundy-gold-frame",
+  chosenCoverId: "da200sf-bn",
   hasOpenedSampleAlbum: false,
   privacyAcknowledged: false,
 };
