@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { AlbumSpine } from "@/components/AlbumCover";
+import { AlbumSpine, spineBoxSize, spineLeanDegrees } from "@/components/AlbumCover";
 import { getCover } from "@/data/covers";
 import type { DemoAlbum } from "@/data/albums";
 import { cn } from "@/lib/utils";
@@ -17,50 +17,66 @@ function ShelfRow({
   reduced,
   linkAlbums,
   nudgeFirst,
+  compact,
 }: {
   albums: DemoAlbum[];
   startIndex: number;
   reduced: boolean | null;
   linkAlbums: boolean;
   nudgeFirst: boolean;
+  compact: boolean;
 }) {
+  const quiet = Boolean(reduced);
+
   return (
-    <div className="relative">
-      <div className="relative px-1 pt-7 sm:px-3 sm:pt-8">
-        <div className="light-sweep pointer-events-none absolute inset-0 overflow-hidden" aria-hidden />
-        <div className="relative flex items-end justify-center gap-[0.3rem] sm:gap-1.5">
-          {albums.map((album, i) => {
-            const index = startIndex + i;
-            const last = i === albums.length - 1;
-            const first = index === 0;
-            const rest = last && !reduced ? -8 : 0;
-            const spine = (
-              <AlbumSpine
-                cover={getCover(album.coverId)}
-                title={album.title}
-                dateRange={album.dateRange}
-                photoCount={album.photoCount}
-                className="h-[148px] w-full min-w-0 max-w-none sm:h-[200px]"
-              />
-            );
-            return (
-              <motion.div
-                key={album.id}
-                initial={
-                  reduced
-                    ? { opacity: 0 }
-                    : { opacity: 0, y: -70, rotate: index % 2 ? 9 : -9 }
-                }
-                animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, rotate: rest }}
-                transition={
-                  reduced
-                    ? { duration: 0.3, delay: index * 0.02 }
-                    : { type: "spring", stiffness: 160, damping: 11, mass: 0.6, delay: 0.08 + index * 0.06 }
-                }
-                {...(reduced ? {} : { whileHover: { y: -14, rotate: rest - 1.5 } })}
+    <div className="relative px-2 sm:px-4">
+      <div className="light-sweep pointer-events-none absolute inset-x-6 top-6 bottom-8 overflow-hidden" aria-hidden />
+      <div
+        className="relative flex items-end justify-center gap-[2px] pt-5 pb-0 sm:gap-[3px] sm:pt-6"
+        style={
+          quiet
+            ? undefined
+            : {
+                perspective: 1200,
+                perspectiveOrigin: "50% 8%",
+              }
+        }
+      >
+        {albums.map((album, i) => {
+          const index = startIndex + i;
+          const last = i === albums.length - 1;
+          const first = index === 0;
+          const cover = getCover(album.coverId);
+          const lean = quiet ? 0 : spineLeanDegrees(album.id, last);
+          const { width, height } = spineBoxSize(cover, album.id, compact);
+          const spine = (
+            <AlbumSpine
+              cover={cover}
+              title={album.title}
+              dateRange={album.dateRange}
+              photoCount={album.photoCount}
+              albumId={album.id}
+              compact={compact}
+              reducedMotion={quiet}
+            />
+          );
+          return (
+            <motion.div
+              key={album.id}
+              initial={quiet ? { opacity: 0 } : { opacity: 0, y: 10 }}
+              animate={quiet ? { opacity: 1 } : { opacity: 1, y: 0, rotate: lean }}
+              transition={
+                quiet
+                  ? { duration: 0.25, delay: index * 0.02 }
+                  : { type: "spring", stiffness: 180, damping: 18, mass: 0.7, delay: 0.04 + index * 0.035 }
+              }
+              {...(quiet ? {} : { whileHover: { y: -8 } })}
+              className="origin-bottom shrink-0"
+              style={{ width: width + (quiet ? 0 : 6), minHeight: height }}
+            >
+              <div
                 className={cn(
-                  "origin-bottom min-w-0 flex-1 basis-0",
-                  first && nudgeFirst && !reduced && "spine-nudge",
+                  first && nudgeFirst && !quiet && "spine-nudge",
                   first && nudgeFirst && "gold-pulse",
                 )}
               >
@@ -70,31 +86,37 @@ function ShelfRow({
                     params={{ id: album.id }}
                     search={{ open: true }}
                     aria-label={`Open ${album.title}, ${album.dateRange}, ${album.photoCount} photos`}
-                    className="block rounded-sm"
+                    className="block"
                   >
                     {spine}
                   </Link>
                 ) : (
                   spine
                 )}
-              </motion.div>
-            );
-          })}
-        </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
       <motion.div
-        initial={reduced ? { opacity: 0 } : { scaleX: 0.7, opacity: 0 }}
+        initial={quiet ? { opacity: 0 } : { scaleX: 0.86, opacity: 0 }}
         animate={{ scaleX: 1, opacity: 1 }}
-        transition={reduced ? { duration: 0.3 } : { type: "spring", stiffness: 120, damping: 18 }}
-        className="wood-texture relative h-4 w-full rounded-sm sm:h-5"
-        style={{ boxShadow: "var(--shadow-shelf)" }}
-      />
-      <div className="wood-texture mx-auto h-2 w-[92%] rounded-b-md opacity-70" />
+        transition={quiet ? { duration: 0.3 } : { type: "spring", stiffness: 120, damping: 18 }}
+        className="relative mx-auto w-full max-w-4xl"
+      >
+        <div
+          className="wood-texture relative h-[13px] w-full rounded-sm sm:h-[15px]"
+          style={{ boxShadow: "var(--shadow-shelf)" }}
+        >
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[5px] rounded-t-sm bg-gradient-to-b from-white/20 to-transparent" />
+        </div>
+        <div className="wood-texture mx-auto h-[7px] w-[96%] rounded-b-md opacity-75" />
+      </motion.div>
     </div>
   );
 }
 
-/** Wooden shelf: every album stays visible. Mobile uses two boards of six. */
+/** Wooden shelf: thin upright albums, same height, all twelve visible. */
 export function Shelf({
   albums,
   className,
@@ -112,7 +134,7 @@ export function Shelf({
 
   return (
     <div className={cn("relative", className)}>
-      <div className="space-y-5 sm:hidden">
+      <div className="space-y-6 sm:hidden">
         {mobileRows.map((row, r) => (
           <ShelfRow
             key={`m-${r}`}
@@ -121,10 +143,11 @@ export function Shelf({
             reduced={reduced}
             linkAlbums={linkAlbums}
             nudgeFirst={nudgeFirst}
+            compact
           />
         ))}
       </div>
-      <div className="hidden space-y-6 sm:block">
+      <div className="hidden space-y-7 sm:block">
         {wideRows.map((row, r) => (
           <ShelfRow
             key={`d-${r}`}
@@ -133,6 +156,7 @@ export function Shelf({
             reduced={reduced}
             linkAlbums={linkAlbums}
             nudgeFirst={nudgeFirst}
+            compact={false}
           />
         ))}
       </div>

@@ -64,7 +64,7 @@ function Landing() {
 
   return (
     <PageShell>
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-x-hidden">
         <motion.div
           aria-hidden
           className="from-gold/20 pointer-events-none absolute inset-0 bg-gradient-to-b via-transparent to-transparent"

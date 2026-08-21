@@ -231,76 +231,183 @@ export function spineDateLabel(dateRange: string): string {
   return `${years[0]!.slice(2)}–${years[1]!.slice(2)}`;
 }
 
-/** Upright album on a shelf: official Pioneer spine photo, with year and count. */
+function idHash(id: string, mod: number): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h) % mod;
+}
+
+/** 4×6 / windowed albums sit a hair shorter; scrapbooks match the row. */
+const SHORTER_SPINES = new Set([
+  "5col240w",
+  "5col240b-p",
+  "5col240tr",
+  "5col240fm",
+  "wfm46-silverframe-wtext",
+  "wfm46-goldframe-wtext",
+  "mb10cbfi",
+  "mb10cbf-bk",
+  "mb10cbf-r",
+  "ev246g-l",
+  "ev246fb-ogn",
+  "a4100-f",
+]);
+
+const LIGHT_SPINE_COLORS = new Set(["Ivory", "Sand", "Pearl", "Rose", "Pale Blue", "Sage"]);
+
+export function spineLeanDegrees(albumId: string, last: boolean): number {
+  if (last) return -4.2;
+  return (idHash(albumId, 21) - 10) / 6;
+}
+
+export function spineBoxSize(cover: AlbumCoverDef, albumId: string, compact: boolean) {
+  const shorter = SHORTER_SPINES.has(cover.id);
+  return {
+    width: (compact ? 26 : 30) + idHash(albumId, 7),
+    height: compact ? (shorter ? 150 : 162) : shorter ? 196 : 214,
+  };
+}
+
+/** Slim 3D Pioneer album: binding face, front edge, hint of the top. */
 export function AlbumSpine({
   cover,
   title,
   dateRange,
   photoCount,
+  albumId,
+  compact = false,
+  reducedMotion = false,
   className,
 }: {
   cover: AlbumCoverDef;
   title: string;
   dateRange?: string;
   photoCount?: number;
+  albumId?: string;
+  compact?: boolean;
+  reducedMotion?: boolean;
   className?: string;
 }) {
   const skin = coverSkin(cover.id);
   const dateLabel = dateRange ? spineDateLabel(dateRange) : "";
   const [photoFailed, setPhotoFailed] = useState(false);
-  const spinePhoto = cover.spineSrc || cover.photoSrc;
+  const spinePhoto = cover.spineSrc;
   const showPhoto = Boolean(spinePhoto) && !photoFailed;
+  const key = albumId ?? cover.id;
+  const { width, height } = spineBoxSize(cover, key, compact);
+  const light = LIGHT_SPINE_COLORS.has(cover.color);
+  const typeColor = light ? skin.ink : skin.accent;
+  const depth = reducedMotion ? 0 : 6;
+
   return (
     <div
-      className={cn("relative overflow-hidden rounded-t-sm rounded-b-[2px]", className)}
-      style={{
-        background: `linear-gradient(100deg, ${skin.shade}, ${skin.base} 40%, ${skin.shade})`,
-        boxShadow: "var(--shadow-spine)",
-      }}
+      className={cn("relative shrink-0", className)}
+      style={{ width: width + depth, height: height + (reducedMotion ? 0 : 5) }}
     >
-      {spinePhoto ? (
-        <img
-          src={spinePhoto}
-          alt=""
-          onError={() => setPhotoFailed(true)}
-          className={cn(
-            "absolute inset-0 h-full w-full object-cover object-left",
-            showPhoto ? "opacity-100" : "hidden",
-          )}
-        />
-      ) : null}
-      {!showPhoto && <TexturedOverlay texture={skin.texture} />}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-black/35"
+        className="pointer-events-none absolute right-[10%] bottom-0 left-[8%] h-2 rounded-[100%] bg-black/40 blur-[3px]"
         aria-hidden
       />
-      <div className="absolute inset-x-1 top-2 h-px" style={{ background: skin.accent, opacity: 0.75 }} />
-      <div className="absolute inset-x-1 bottom-2 h-px" style={{ background: skin.accent, opacity: 0.75 }} />
-      {dateLabel ? (
-        <span
-          className="absolute inset-x-0 top-2.5 text-center text-[0.48rem] font-semibold tracking-wide drop-shadow sm:text-[0.55rem]"
-          style={{ color: skin.accent }}
+      <div
+        className="absolute bottom-0 left-0"
+        style={{
+          width,
+          height,
+          transform: reducedMotion ? undefined : "rotateX(6deg) rotateY(-9deg)",
+          transformOrigin: "bottom center",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <div
+          className="absolute inset-0 overflow-hidden rounded-[1px]"
+          style={{
+            background: `linear-gradient(100deg, ${skin.shade}, ${skin.base} 42%, ${skin.shade})`,
+            boxShadow: "inset 1px 0 0 rgba(255,255,255,0.12), inset -2px 0 3px rgba(0,0,0,0.28)",
+          }}
         >
-          {dateLabel}
-        </span>
-      ) : null}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span
-          className="font-display max-h-[58%] overflow-hidden text-[0.58rem] font-semibold tracking-wide whitespace-nowrap drop-shadow sm:text-[0.62rem]"
-          style={{ color: skin.ink, writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-        >
-          {title}
-        </span>
+          {spinePhoto ? (
+            <img
+              src={spinePhoto}
+              alt=""
+              onError={() => setPhotoFailed(true)}
+              className={cn(
+                "absolute inset-0 h-full w-full object-cover",
+                showPhoto ? "opacity-100" : "hidden",
+              )}
+            />
+          ) : null}
+          {!showPhoto && <TexturedOverlay texture={skin.texture} />}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, transparent 34%, transparent 62%, rgba(0,0,0,0.32) 100%)",
+            }}
+            aria-hidden
+          />
+          {dateLabel ? (
+            <span
+              className="absolute inset-x-0 top-[9px] text-center text-[0.42rem] font-semibold tracking-[0.04em] sm:text-[0.48rem]"
+              style={{ color: typeColor, textShadow: light ? "none" : "0 1px 1px rgba(0,0,0,0.45)" }}
+            >
+              {dateLabel}
+            </span>
+          ) : null}
+          <div className="absolute inset-x-0 top-[22%] bottom-[18%] flex items-center justify-center overflow-hidden">
+            <span
+              className="font-display max-h-full px-px text-[0.52rem] font-semibold tracking-[0.12em] whitespace-nowrap sm:text-[0.56rem]"
+              style={{
+                color: typeColor,
+                writingMode: "vertical-rl",
+                transform: "rotate(180deg)",
+                textShadow: light ? "none" : "0 1px 1px rgba(0,0,0,0.5)",
+              }}
+            >
+              {title}
+            </span>
+          </div>
+          {typeof photoCount === "number" ? (
+            <span
+              className="absolute inset-x-0 bottom-[8px] text-center text-[0.4rem] font-semibold tracking-wide sm:text-[0.45rem]"
+              style={{ color: typeColor, opacity: 0.85 }}
+              aria-hidden
+            >
+              {photoCount}
+            </span>
+          ) : null}
+        </div>
+
+        {!reducedMotion && (
+          <>
+            <div
+              className="absolute top-[3px] bottom-[1px] w-[6px] rounded-r-[1px]"
+              style={{
+                left: "100%",
+                background: `linear-gradient(90deg, ${skin.shade}, ${skin.base} 55%, ${skin.shade})`,
+                boxShadow: "1px 0 2px rgba(0,0,0,0.28)",
+              }}
+              aria-hidden
+            />
+            <div
+              className="absolute right-[-3px] left-0 h-[5px]"
+              style={{
+                bottom: "100%",
+                background: `linear-gradient(180deg, color-mix(in oklab, ${skin.base} 86%, white), ${skin.shade})`,
+                clipPath: "polygon(8% 100%, 100% 100%, 86% 0, 14% 0)",
+              }}
+              aria-hidden
+            />
+            <div
+              className="absolute right-[18%] left-[16%] h-[2px] bg-[#f4ead8]/80"
+              style={{ bottom: "calc(100% + 3px)" }}
+              aria-hidden
+            />
+          </>
+        )}
       </div>
-      {typeof photoCount === "number" ? (
-        <span
-          className="absolute inset-x-0 bottom-2.5 text-center text-[0.48rem] font-semibold tracking-wide drop-shadow sm:text-[0.55rem]"
-          style={{ color: skin.accent }}
-          aria-hidden
-        >
-          {photoCount}
-        </span>
-      ) : null}
     </div>
   );
 }

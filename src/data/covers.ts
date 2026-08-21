@@ -38,7 +38,7 @@ export interface AlbumCoverDef {
   coverImage: string;
   /** Official Pioneer front/cover JPEG under /pioneer/covers/. */
   photoSrc?: string;
-  /** Official spine crop (or cover cropped to a tall spine) under /pioneer/spines/. */
+  /** Binding texture generated from the official cover material under /pioneer/spines/. */
   spineSrc?: string;
   formats: CoverFormat[];
   licensingStatus: LicensingStatus;
